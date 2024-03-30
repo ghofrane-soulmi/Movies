@@ -13,7 +13,7 @@
 
           <ion-tab-button tab="home" href="/home">
             <ion-icon :icon="playCircle" />
-            <ion-label>Watch now</ion-label>
+            <ion-label>Movies</ion-label>
           </ion-tab-button>
   
         </ion-tab-bar>
@@ -22,7 +22,7 @@
   </template>
   
   <script setup lang="ts">
-     import { IonIcon } from '@ionic/vue';
+  import { IonIcon } from '@ionic/vue';
   import { logoIonic } from 'ionicons/icons';
   
     import { IonPage, IonTabs, IonRouterOutlet, IonTabBar, IonTabButton, IonLabel } from '@ionic/vue';

@@ -6,10 +6,13 @@
       
       <!-- Display movie list only if searchQuery is not empty -->
       <ion-list v-if="searchQuery">
-        <ion-item v-for="movie in filteredMovies" :key="movie.id" @click="viewMovieDetails(movie.id)">
-          <ion-thumbnail slot="start">
-            <ion-img :src="getMoviePosterUrl(movie.poster_path)" :alt="movie.title"></ion-img>
-          </ion-thumbnail>
+  <div v-if="filteredMovies.length === 0">
+    No movies found.
+  </div>
+  <ion-item v-else v-for="movie in filteredMovies" :key="movie.id" @click="viewMovieDetails(movie.id)">
+    <ion-thumbnail slot="start">
+      <ion-img :src="getMoviePosterUrl(movie.poster_path)" :alt="movie.title"></ion-img>
+    </ion-thumbnail>
           <ion-label>
             <h5>{{ movie.title }}</h5>
             <p>Release Year: {{ getReleaseYear(movie.release_date) }}</p>
@@ -33,56 +36,59 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
-import { ref, computed, onMounted, watch } from 'vue';
-import router from '../../router'
-import { API_KEY, API_BASE_URL, API_IMAGE_BASE_URL } from '../../apiConfig'; // Adjust the path as needed
+import { ref, onMounted, watch } from 'vue';
+import router from '../../router';
+import { fetchMovies, searchMovies } from '../../movieApi';
+import { IonLabel, IonCardSubtitle, IonImg, IonPage, IonContent, IonSearchbar, IonList, IonItem, IonThumbnail, IonCard, IonCardHeader, IonCardTitle } from '@ionic/vue';
 
-import {IonLabel,IonCardSubtitle, IonImg,IonPage, IonContent, IonSearchbar, IonList, IonItem, IonThumbnail, IonCard, IonCardHeader, IonCardTitle } from '@ionic/vue';
+const API_IMAGE_BASE_URL: string = 'https://image.tmdb.org/t/p/w500';
 
+interface Movie {
+  id: number;
+  title: string;
+  release_date: string;
+  overview: string;
+  poster_path: string | null;
+}
 
 const searchQuery = ref('');
-const movies = ref([] as { id: number, title: string, release_date: string, overview: string, poster_path: string | null }[]);
-
-const fetchMovies = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
-    movies.value = response.data.results;
-  } catch (error) {
-    console.error('Error fetching movies:', error);
-  }
-};
+const movies = ref<Movie[]>([]);
+const filteredMovies = ref<Movie[]>([]); 
 
 const viewMovieDetails = (id: number) => {
   router.push({ path: `/movie/${id}` });
 };
 
+// get the image path for the images src
 const getMoviePosterUrl = (posterPath: string | null) => {
   return posterPath ? `${API_IMAGE_BASE_URL}/${posterPath}` : '';
 };
 
+// format date for the list of movies 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
+// get the year the be displayed in the result of films searched 
 const getReleaseYear = (dateString: string) => {
   return new Date(dateString).getFullYear();
 };
 
-onMounted(() => {
-  fetchMovies();
-});
+// filter the movie with title and release date 
 
-const filteredMovies = computed(() => {
-  return movies.value.filter(movie => {
-    console.log ("moviess" ,movies.value);
-       return movie.title.toLowerCase().includes(searchQuery.value.toLowerCase());
-  });
-});
 
-watch(searchQuery, (newValue) => {
-  console.log('Search query changed. New value:', newValue);
+watch(searchQuery, async (newValue) => {
+  const trimmedQuery = newValue.trim();
+  if (trimmedQuery) {
+    filteredMovies.value = await searchMovies(trimmedQuery);
+  } else {
+    filteredMovies.value = movies.value;
+  }
+});
+onMounted(async () => {
+  // Fetch movies when the component is mounted
+  movies.value = await fetchMovies();
 });
 </script>
 

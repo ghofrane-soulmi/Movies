@@ -4,6 +4,9 @@ import router from './router';
 import './style.css'
 import App from './App.vue'
 
+
+
+
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
 

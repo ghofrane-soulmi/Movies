@@ -6,7 +6,7 @@
         </ion-toolbar>
       </ion-header>
       <ion-content>
-      <ion-card class="movie-card">
+      <ion-card class="movie-card"  v-if="movie">
         <ion-img :src="getMoviePosterUrl(movie.poster_path)" :alt="movie.title" class="movie-poster"></ion-img>
         <ion-card-content>
           <ion-list lines="none">
@@ -24,15 +24,14 @@
                 </a>
               </template>
               <template v-else>
-                <ion-label><strong>Overview:</strong> {{ movie.overview }}</ion-label>
-                <a href="#" @click.prevent="toggleShowMore(movie.id, false)">
-                  Show less
-                </a>
-              </template>
-              <!-- <template v-else>
-                <ion-label><strong>Overview:</strong> {{ movie.overview }}</ion-label>
-               
-              </template> -->
+              <ion-label><strong>Overview:</strong> {{ movie.overview }}</ion-label>
+              <a href="#" @click.prevent="toggleShowMore(movie.id, false)">
+                Show less 
+              </a>
+            </template>
+    
+
+          
             </ion-item>
 
             <ion-item v-if="movie && movie.genres">
@@ -75,9 +74,7 @@
                
               </ion-label>
             </ion-item>
-            <!-- <ion-item v-else>
-              <ion-label>Loading...</ion-label>
-            </ion-item> -->
+          
           </ion-list>
         </ion-card-content>
       </ion-card>
@@ -87,58 +84,63 @@
   
   <script setup lang="ts">
   import { ref, onMounted } from 'vue';
-  import router from '../../router'
-  import axios from 'axios';
-  import { API_KEY, API_BASE_URL, API_IMAGE_BASE_URL } from '../../apiConfig'; // Adjust the path as needed
+  import {useRoute} from 'vue-router'
+  import { fetchMovieDetails } from '../../movieApi'; 
+  const API_IMAGE_BASE_URL: string = 'https://image.tmdb.org/t/p/w500';
   import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonImg, IonCardContent, IonList, IonItem, IonLabel } from '@ionic/vue';
-// Import necessary Ionic components from @ionic/vue
+  const route = useRoute();
 
 
 
+  interface Movie {
+  id: number;
+  title: string;
+  release_date: string;
+  overview: string;
+  poster_path: string | null;
+  genres: { name: string }[];
+  original_language: string;
+  vote_average: number;
+  vote_count: number;
+  adult: boolean;
+}
 
-  //const router = useRouter();
-  const movie = ref([] as { id: number, title: string, release_date: string, overview: string, poster_path: string | null }[]);
+const movie = ref<Movie | null>(null); 
 
-  
-  const fetchMovieDetails = async () => {
-    try {
-      const movieId = router.currentRoute.value.params.id;
-      const response = await axios.get(`${API_BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US`);
-      movie.value = response.data;
-      console.log('movie',movie.value)
-    } catch (error) {
-      console.error('Error fetching movie details:', error);
-    }
-  };
-  
-  onMounted(() => {
-    fetchMovieDetails();
-  });
+const movieId = Number(route.params.id); // Convert string to number
+
+onMounted(async () => {
+  movie.value = await fetchMovieDetails(movieId);
+});
+
+// get the image path for the images src
   const getMoviePosterUrl = (posterPath: string | null) => {
   return posterPath ? `${API_IMAGE_BASE_URL}/${posterPath}` : '';
 };
+
+// format date for the list of movies 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
 
-
-
-  
 // control the overview of the film if it is too long to slice it adding a button read more and show less
-const maxOverviewLength = 150; 
+const maxOverviewLength = 50; 
 
 const expandedMovies = ref<Set<number>>(new Set());
 
+// function to check if the overview is longer than the maximum length
   const isOverviewLong = (overview: string): boolean => {
-  return overview && overview.length > maxOverviewLength;
+  return  typeof overview && overview.length > maxOverviewLength;
 };
 
+// function to truncate movie overview if it exceeds the maximum length
 const truncateOverview = (overview: string): string => {
   return overview ? overview.slice(0, maxOverviewLength) + '...' : '';
 };
 
+// function to toggle the display of full movie overview
 const toggleShowMore = (movieId: number, expand: boolean): void => {
   const set = expandedMovies.value;
   if (expand) {
@@ -148,6 +150,7 @@ const toggleShowMore = (movieId: number, expand: boolean): void => {
   }
 };
 
+// function to check if the overview for a movie is expanded
 const isOverviewExpanded = (movieId: number): boolean => {
   return expandedMovies.value.has(movieId);
 };
@@ -155,10 +158,10 @@ const isOverviewExpanded = (movieId: number): boolean => {
   
   <style scoped>
   .movie-poster {
-  width: auto; /* Set the image width to 100% of its container */
-  height: auto; /* Let the height adjust proportionally based on the width */
-  max-width: 100%; /* Ensure the image does not exceed the container width */
-  max-height: 100%; /* Ensure the image does not exceed the container height */
+  width: auto; 
+  height: auto;
+  max-width: 100%;
+  max-height: 100%; 
 }
   .movie-card {
     margin: 20px;

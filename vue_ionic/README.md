@@ -1,9 +1,35 @@
-# Vue 3 + TypeScript + Vite
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+# Vue Ionic Movies App
 
-## Recommended Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+This application is a movie-viewing platform developed using Vue.js and the Ionic framework. It enables users to explore a catalog of movies sourced from the TMDb API, conduct searches for specific movies, and access detailed information about each movie.
 
-- Use [vue-tsc](https://github.com/vuejs/language-tools/tree/master/packages/tsc) for performing the same type checking from the command line, or for generating d.ts files for SFCs.
+
+##Features
+
+Browse a list of movies
+Search for movies by title
+View detailed information about each movie
+
+## Installation
+
+To set up and run this project on your local machine, please follow these instructions:
+
+### Prerequisites
+
+- Node.js (v14 or later)
+- npm (v6 or later)
+- Ionic CLI
+
+### Clone the Repository
+ git clone https://github.com/ghofrane-soulmi/Movies.git
+
+cd vue_ionic
+
+npm install
+
+### Start the Development Server
+npm run dev
+
+### Building for Production
+npm run build
