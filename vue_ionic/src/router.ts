@@ -10,12 +10,12 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        redirect: '/home',
+        redirect: '/welcome',
       },
    
       {
-        path: 'search',
-        component: () => import('./views/Tabs/SearchPage.vue'),
+        path: 'welcome',
+        component: () => import('./views/Tabs/WelcomePage.vue'),
       },
       {
         path: 'home',
