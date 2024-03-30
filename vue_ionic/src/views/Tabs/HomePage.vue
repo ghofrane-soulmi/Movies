@@ -33,23 +33,25 @@
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
 import { ref, computed, onMounted, watch } from 'vue';
-import router from '../../router';
-import { fetchMovies, searchMovies } from '../../movieApi';
-import { IonLabel, IonCardSubtitle, IonImg, IonPage, IonContent, IonSearchbar, IonList, IonItem, IonThumbnail, IonCard, IonCardHeader, IonCardTitle } from '@ionic/vue';
+import router from '../../router'
+import { API_KEY, API_BASE_URL, API_IMAGE_BASE_URL } from '../../apiConfig'; // Adjust the path as needed
 
-const API_IMAGE_BASE_URL: string = 'https://image.tmdb.org/t/p/w500';
+import {IonLabel,IonCardSubtitle, IonImg,IonPage, IonContent, IonSearchbar, IonList, IonItem, IonThumbnail, IonCard, IonCardHeader, IonCardTitle } from '@ionic/vue';
 
-interface Movie {
-  id: number;
-  title: string;
-  release_date: string;
-  overview: string;
-  poster_path: string | null;
-}
 
 const searchQuery = ref('');
-const movies = ref<Movie[]>([]);
+const movies = ref([] as { id: number, title: string, release_date: string, overview: string, poster_path: string | null }[]);
+
+const fetchMovies = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
+    movies.value = response.data.results;
+  } catch (error) {
+    console.error('Error fetching movies:', error);
+  }
+};
 
 const viewMovieDetails = (id: number) => {
   router.push({ path: `/movie/${id}` });
@@ -68,28 +70,19 @@ const getReleaseYear = (dateString: string) => {
   return new Date(dateString).getFullYear();
 };
 
-const filteredMovies = computed(() => {
-  const trimmedQuery = searchQuery.value.trim().toLowerCase();
-
-  if (!trimmedQuery) {
-    return movies.value;
-  } else {
-    return movies.value.filter(movie => {
-      const titleMatch = movie.title.toLowerCase().includes(trimmedQuery);
-      const releaseDateMatch = new Date(movie.release_date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).includes(trimmedQuery);
-      return titleMatch || releaseDateMatch;
-    });
-  }
+onMounted(() => {
+  fetchMovies();
 });
 
+const filteredMovies = computed(() => {
+  return movies.value.filter(movie => {
+    console.log ("moviess" ,movies.value);
+       return movie.title.toLowerCase().includes(searchQuery.value.toLowerCase());
+  });
+});
 
 watch(searchQuery, (newValue) => {
   console.log('Search query changed. New value:', newValue);
-});
-
-onMounted(async () => {
-  // Fetch movies when the component is mounted
-  movies.value = await fetchMovies();
 });
 </script>
 

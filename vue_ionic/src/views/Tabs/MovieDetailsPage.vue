@@ -87,23 +87,33 @@
   
   <script setup lang="ts">
   import { ref, onMounted } from 'vue';
-  import {useRoute} from 'vue-router'
-  import { fetchMovieDetails } from '../../movieApi'; 
-  const API_IMAGE_BASE_URL: string = 'https://image.tmdb.org/t/p/w500';
+  import router from '../../router'
+  import axios from 'axios';
+  import { API_KEY, API_BASE_URL, API_IMAGE_BASE_URL } from '../../apiConfig'; // Adjust the path as needed
   import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonImg, IonCardContent, IonList, IonItem, IonLabel } from '@ionic/vue';
-const route = useRoute();
-const movieId = route.params.id;
+// Import necessary Ionic components from @ionic/vue
 
 
 
- 
+
+  //const router = useRouter();
   const movie = ref([] as { id: number, title: string, release_date: string, overview: string, poster_path: string | null }[]);
 
-  onMounted(async () => {
-   
-    movie.value = await fetchMovieDetails(movieId); // Use the fetchMovies function
+  
+  const fetchMovieDetails = async () => {
+    try {
+      const movieId = router.currentRoute.value.params.id;
+      const response = await axios.get(`${API_BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US`);
+      movie.value = response.data;
+      console.log('movie',movie.value)
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+    }
+  };
+  
+  onMounted(() => {
+    fetchMovieDetails();
   });
-
   const getMoviePosterUrl = (posterPath: string | null) => {
   return posterPath ? `${API_IMAGE_BASE_URL}/${posterPath}` : '';
 };
